@@ -1,0 +1,316 @@
+// Prisma Schema for College Internship Management System
+// Database: MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FACULTY
+  STUDENT
+}
+
+enum ApplicationStatus {
+  pending
+  shortlisted
+  rejected
+  accepted
+  withdrawn
+}
+
+enum InternshipStatus {
+  draft
+  pending_approval
+  approved
+  active
+  closed
+  archived
+}
+
+enum CompanyStatus {
+  active
+  pending
+  archived
+}
+
+enum InterviewStatus {
+  scheduled
+  completed
+  cancelled
+  rescheduled
+}
+
+enum InterviewResult {
+  pending
+  passed
+  failed
+  rescheduled
+}
+
+enum SystemFeedbackType {
+  bug
+  feature
+  improvement
+  other
+}
+
+enum SystemFeedbackStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+model User {
+  id                    Int              @id @default(autoincrement())
+  email                 String           @unique
+  passwordHash          String
+  role                  Role             @default(STUDENT)
+  isActive              Boolean          @default(true)
+  isVerified            Boolean          @default(true) // Set default true for demo convenience, email verification supported
+  verificationToken     String?
+  resetPasswordToken    String?
+  resetPasswordExpires  DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  student               Student?
+  faculty               Faculty?
+  notifications         Notification[]
+  systemFeedbacks       SystemFeedback[]
+  evaluationsGiven      Evaluation[]     @relation("EvaluatorUser")
+
+  @@index([email])
+  @@index([role])
+}
+
+model Student {
+  id           Int           @id @default(autoincrement())
+  userId       Int           @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String
+  department   String
+  GPA          Float         // Decimal 0.0 - 4.0
+  resume       String?       // Primary resume file path/name
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  applications Application[]
+  feedback     Feedback[]
+  resumes      Resume[]
+
+  @@index([department])
+  @@index([GPA])
+}
+
+model Faculty {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  department  String
+  phone       String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  internships Internship[]
+
+  @@index([department])
+}
+
+model Company {
+  id                 Int           @id @default(autoincrement())
+  name               String
+  registrationNumber String        @unique
+  location           String
+  contactPerson      String
+  email              String
+  phone              String
+  description        String        @db.Text
+  status             CompanyStatus @default(active)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  internships        Internship[]
+  feedbacks          Feedback[]
+
+  @@index([name])
+  @@index([status])
+  @@index([location])
+}
+
+model Internship {
+  id                  Int              @id @default(autoincrement())
+  companyId           Int
+  company             Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  facultyId           Int?
+  faculty             Faculty?         @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+  title               String
+  description         String           @db.Text
+  domain              String
+  duration            String           // e.g., "12 weeks" or "3 months"
+  durationWeeks       Int              @default(12) // Validated 4 to 26 weeks
+  stipend             Float            @default(0.0)
+  location            String           @default("Remote")
+  startDate           DateTime
+  endDate             DateTime
+  applicationDeadline DateTime
+  status              InternshipStatus @default(pending_approval)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  applications        Application[]
+  feedbacks           Feedback[]
+
+  @@index([companyId])
+  @@index([domain])
+  @@index([status])
+  @@index([stipend])
+  @@index([applicationDeadline])
+}
+
+model Application {
+  id             Int                 @id @default(autoincrement())
+  studentId      Int
+  student        Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  internshipId   Int
+  internship     Internship          @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  resume         String              // PDF file path or link
+  coverLetter    String              @db.Text
+  qualifications String              @db.Text
+  status         ApplicationStatus   @default(pending)
+  appliedAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  timeline       ApplicationTimeline[]
+  interview      Interview?
+  evaluation     Evaluation?
+
+  // Strict constraint: A student cannot apply more than once to the same internship
+  @@unique([studentId, internshipId])
+  @@index([studentId])
+  @@index([internshipId])
+  @@index([status])
+}
+
+model ApplicationTimeline {
+  id            Int               @id @default(autoincrement())
+  applicationId Int
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        ApplicationStatus
+  comments      String?           @db.Text
+  actionBy      String?           // Role or Name of reviewer
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId])
+}
+
+model Interview {
+  id            Int             @id @default(autoincrement())
+  applicationId Int             @unique
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewDate DateTime
+  interviewer   String
+  interviewMode String          @default("Online / Video Call")
+  meetingLink   String?
+  result        InterviewResult @default(pending)
+  comments      String?         @db.Text
+  status        InterviewStatus @default(scheduled)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([interviewDate])
+  @@index([status])
+}
+
+model Evaluation {
+  id              Int         @id @default(autoincrement())
+  applicationId   Int         @unique
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  evaluatorId     Int         // User who submitted the evaluation
+  evaluator       User        @relation("EvaluatorUser", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  technicalSkills Int         // 1 to 5
+  softSkills      Int         // 1 to 5
+  punctuality     Int         // 1 to 5
+  responsibility  Int         // 1 to 5
+  teamwork        Int         // 1 to 5
+  learningAbility Int         // 1 to 5
+  overallRating   Float       // 1.0 to 5.0
+  comments        String      @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([evaluatorId])
+}
+
+model Feedback {
+  id                 Int        @id @default(autoincrement())
+  studentId          Int
+  student            Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  companyId          Int
+  company            Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  internshipId       Int
+  internship         Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  rating             Int        // 1 to 5 stars
+  companyCulture     Int        // 1 to 5
+  mentorshipQuality  Int        // 1 to 5
+  technicalLearning  Int        // 1 to 5
+  workEnvironment    Int        // 1 to 5
+  overallExperience  Int        // 1 to 5
+  comments           String     @db.Text
+  suggestions        String?    @db.Text
+  createdAt          DateTime   @default(now())
+
+  @@index([studentId])
+  @@index([companyId])
+  @@index([internshipId])
+}
+
+model Resume {
+  id         Int      @id @default(autoincrement())
+  studentId  Int
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String
+  fileSize   Int      // in bytes (max 5MB = 5 * 1024 * 1024)
+  uploadedAt DateTime @default(now())
+
+  @@index([studentId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  type      String   @default("SYSTEM") // APPLICATION, INTERVIEW, EVALUATION, SYSTEM
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model SystemFeedback {
+  id            Int                  @id @default(autoincrement())
+  userId        Int
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          SystemFeedbackType   @default(improvement)
+  description   String               @db.Text
+  status        SystemFeedbackStatus @default(open)
+  adminResponse String?              @db.Text
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
