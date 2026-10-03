@@ -106,9 +106,10 @@ The automated test suite (`tests/api-workflow.test.ts`) executed 14 end-to-end i
 ## 7. GitHub Status
 
 - Git repository initialized at `college-internship-management-system`.
+- Remote origin configured: `https://github.com/yash7175/COLLEGE-INTERNSHIP-MANAGEMENT-SYSTEM.git` on branch `main`.
 - Clean `.gitignore` excludes `.env`, `node_modules/`, `dist/`, `uploads/`, and temporary build files.
 - Zero secrets or passwords committed to Git.
-- Exact push commands provided in documentation.
+- Meaningful conventional commits created across all modules.
 
 ---
 
