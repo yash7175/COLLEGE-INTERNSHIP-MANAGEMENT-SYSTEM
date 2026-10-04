@@ -21,7 +21,8 @@
     "prisma:migrate": "npm run prisma:migrate --workspace=backend",
     "prisma:seed": "npm run prisma:seed --workspace=backend",
     "db:clean": "npm run prisma:clean --workspace=backend",
-    "db:seed": "npm run prisma:seed --workspace=backend"
+    "db:seed": "npm run prisma:seed --workspace=backend",
+    "deploy:pages": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy-gh-pages.ps1"
   },
   "keywords": [
     "internship",
