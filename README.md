@@ -162,8 +162,19 @@ Ensure you have the following installed on your machine:
 - **npm** (v9.0.0 or higher)
 - **MySQL / MariaDB Server** (running locally on port 3306)
 
-### 1. Initialize the MySQL Database
-Log into MySQL and create the database:
+### 1. Initialize & Start the MySQL Database
+You can easily start MySQL with one command or batch file:
+```bash
+# Option A: Start using NPM script (auto-detects local MariaDB/MySQL)
+npm run mysql:start
+
+# Option B: Double-click start-mysql.bat in the project root
+
+# To stop the server when done:
+npm run mysql:stop
+```
+
+Or manually log into MySQL and ensure the database exists:
 ```sql
 CREATE DATABASE IF NOT EXISTS college_internship CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
