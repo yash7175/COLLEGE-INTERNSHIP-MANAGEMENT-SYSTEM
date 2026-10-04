@@ -15,7 +15,15 @@ if ($conn.TcpTestSucceeded) {
 Write-Host "[!] Port $Port is not active. Starting MariaDB server..." -ForegroundColor Yellow
 
 if (Test-Path $MariaDbPath) {
-    Start-Process -FilePath $MariaDbPath -ArgumentList "--defaults-file=`"$ConfigFile`"", "--console" -WindowStyle Hidden
+    # Launch completely detached via Win32_Process so it survives parent shell exit
+    $cmd = "`"$MariaDbPath`" --defaults-file=`"$ConfigFile`" --console"
+    $res = ([wmiclass]"win32_process").Create($cmd)
+    
+    if ($res.ReturnValue -ne 0) {
+        Write-Host "[WARN] WMI creation failed with code $($res.ReturnValue). Falling back to Start-Process..." -ForegroundColor Yellow
+        Start-Process -FilePath $MariaDbPath -ArgumentList "--defaults-file=`"$ConfigFile`"", "--console" -WindowStyle Hidden
+    }
+
     Start-Sleep -Seconds 3
 
     $verify = Test-NetConnection -ComputerName 127.0.0.1 -Port $Port -WarningAction SilentlyContinue
