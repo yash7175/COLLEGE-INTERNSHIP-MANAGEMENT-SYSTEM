@@ -208,47 +208,45 @@ npm install --workspace=frontend
 npm install --save-dev concurrently
 ```
 
-### 2. Run Database Migrations & Seeding
+### 2. Database Management
 ```bash
 # Push schema to MySQL database:
 npm run prisma:generate --workspace=backend
 npm run prisma:push --workspace=backend
 
-# Seed demo accounts and realistic sample records:
-npm run prisma:seed --workspace=backend
+# Purge mock data (leaves clean Admin account only):
+npm run db:clean
+# Or double-click: clean-database.bat
+
+# (Optional) Seed realistic sample records if needed for testing:
+npm run db:seed
 ```
 
-### 3. Launch Development Servers
-Run both backend and frontend concurrently:
+### 3. Launch the Application (One-Click Automated)
+To start MySQL, Backend, Frontend, and automatically open your browser in one click:
+- **Double-click `start.bat`** in the project root folder.
+
+Or start from terminal:
 ```bash
+# Start MySQL (if not already running):
+npm run mysql:start
+
+# Run Backend (Port 5000) and Frontend (Port 5173) concurrently:
 npm run dev
-```
-
-Or start each separately:
-```bash
-# Terminal 1 (Backend API on http://localhost:5000):
-npm run dev:backend
-
-# Terminal 2 (Frontend Client on http://localhost:5173):
-npm run dev:frontend
 ```
 
 ---
 
-## Demo Credentials
+## Default Administrator Credentials
 
-The database seed provisions active demo accounts for all three user roles:
+When the database is cleaned, the system is provisioned with a clean, verified Super Administrator account:
 
-| Role | Email | Password | Details |
+| Role | Email | Password | Access Scope |
 |---|---|---|---|
-| **Admin** | `admin@example.com` | `Password@123` | Institutional Director (Full Access) |
-| **Faculty** | `faculty@example.com` | `Password@123` | Dr. Evelyn Reed (Computer Science & Engineering) |
-| **Faculty 2** | `faculty2@example.com` | `Password@123` | Prof. Marcus Vance (Data Science & AI) |
-| **Student** | `student@example.com` | `Password@123` | Alex Morgan (CS, GPA 3.85, Placed) |
-| **Student 2** | `student2@example.com` | `Password@123` | Sophia Chen (CS, GPA 3.92, Shortlisted) |
-| **Student 3** | `student3@example.com` | `Password@123` | Liam Patel (IS, GPA 3.65, Pending) |
+| **System Admin** | `admin@example.com` | `Password@123` | Institutional Director (Full System Access) |
 
-> **Tip:** The Login page features **One-Click Demo Login** buttons for instant testing of Student, Faculty, and Admin interfaces without typing credentials.
+- **Students & Faculty** can register directly via the **Register** link on the login page (`/register`).
+- New company profiles, internship positions, and evaluations can be added directly through the live portals.
 
 ---
 

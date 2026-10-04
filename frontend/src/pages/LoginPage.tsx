@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -50,19 +50,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const autofillDemo = (role: 'ADMIN' | 'FACULTY' | 'STUDENT') => {
-    if (role === 'ADMIN') {
-      setEmail('admin@example.com');
-      setPassword('Password@123');
-    } else if (role === 'FACULTY') {
-      setEmail('faculty@example.com');
-      setPassword('Password@123');
-    } else {
-      setEmail('student@example.com');
-      setPassword('Password@123');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-['Plus_Jakarta_Sans']">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -75,41 +62,27 @@ export const LoginPage: React.FC = () => {
           Sign In to CIMS
         </h2>
         <p className="mt-2 text-sm text-slate-500">
-          Enter your institutional credentials or choose a quick demo account
+          Enter your institutional credentials to access your dashboard
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 rounded-3xl border border-slate-200/80 sm:px-10">
-          {/* Quick Demo Autofill Bar */}
-          <div className="mb-6 p-3.5 rounded-2xl bg-brand-50/70 border border-brand-100">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-brand-800 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-              Quick Demo Accounts (Password: Password@123):
+          {/* Initial Admin Access Hint */}
+          <div className="mb-6 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+            <div className="text-xs text-slate-600">
+              <span className="font-bold text-slate-800">System Admin:</span> admin@example.com
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => autofillDemo('STUDENT')}
-                className="py-1.5 px-2 text-[11px] font-bold text-emerald-800 bg-emerald-100/70 hover:bg-emerald-200 rounded-xl transition-colors"
-              >
-                Student
-              </button>
-              <button
-                type="button"
-                onClick={() => autofillDemo('FACULTY')}
-                className="py-1.5 px-2 text-[11px] font-bold text-blue-800 bg-blue-100/70 hover:bg-blue-200 rounded-xl transition-colors"
-              >
-                Faculty
-              </button>
-              <button
-                type="button"
-                onClick={() => autofillDemo('ADMIN')}
-                className="py-1.5 px-2 text-[11px] font-bold text-purple-800 bg-purple-100/70 hover:bg-purple-200 rounded-xl transition-colors"
-              >
-                Admin
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@example.com');
+                setPassword('Password@123');
+              }}
+              className="py-1 px-2.5 text-[11px] font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200/60 rounded-lg transition-colors cursor-pointer"
+            >
+              Fill Admin
+            </button>
           </div>
 
           {error && (

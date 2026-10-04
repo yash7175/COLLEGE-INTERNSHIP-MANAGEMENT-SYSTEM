@@ -11,6 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:push": "prisma db push",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:clean": "ts-node prisma/clean.ts",
     "prisma:studio": "prisma studio",
     "test": "ts-node tests/api-workflow.test.ts"
   },

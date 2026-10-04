@@ -19,7 +19,9 @@
     "mysql:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/stop-mysql.ps1",
     "prisma:generate": "npm run prisma:generate --workspace=backend",
     "prisma:migrate": "npm run prisma:migrate --workspace=backend",
-    "prisma:seed": "npm run prisma:seed --workspace=backend"
+    "prisma:seed": "npm run prisma:seed --workspace=backend",
+    "db:clean": "npm run prisma:clean --workspace=backend",
+    "db:seed": "npm run prisma:seed --workspace=backend"
   },
   "keywords": [
     "internship",
