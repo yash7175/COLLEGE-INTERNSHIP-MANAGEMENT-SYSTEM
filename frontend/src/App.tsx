@@ -40,7 +40,7 @@ import { AdminFeedbackPage } from './pages/admin/AdminFeedbackPage';
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           {/* Public Landing & Auth */}
           <Route path="/" element={<LandingPage />} />
