@@ -9,6 +9,8 @@ import {
   AlertCircle,
   Award,
   Video,
+  Building,
+  ArrowRight,
 } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -18,17 +20,24 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<any>(null);
+  const [availableInternships, setAvailableInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await api.get('/reports/student/stats');
-        if (res.data?.success) {
-          setStats(res.data.data);
+        const [statsRes, internshipsRes] = await Promise.all([
+          api.get('/reports/student/stats'),
+          api.get('/internships?limit=4'),
+        ]);
+        if (statsRes.data?.success) {
+          setStats(statsRes.data.data);
+        }
+        if (internshipsRes.data?.success) {
+          setAvailableInternships(internshipsRes.data.data || []);
         }
       } catch (err) {
-        console.error('Failed to load student stats:', err);
+        console.error('Failed to load student dashboard:', err);
       } finally {
         setLoading(false);
       }
@@ -238,6 +247,71 @@ export const StudentDashboard: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Explore Open Internships Section */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Explore Open Internships</h2>
+            <p className="text-xs text-slate-500">Recently verified corporate & research positions ready for application</p>
+          </div>
+          <Link
+            to="/internships"
+            className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700"
+          >
+            View All Internships <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {availableInternships.length === 0 ? (
+          <p className="py-8 text-center text-xs text-slate-400">
+            No open internships available right now. Check back soon!
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {availableInternships.map((item) => (
+              <div
+                key={item.id}
+                className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:border-brand-200 hover:shadow-xs transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-2">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200/60">
+                      {item.domain}
+                    </span>
+                    <StatusBadge status={item.status} size="sm" />
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-900 line-clamp-1 mb-1" title={item.title}>
+                    {item.title}
+                  </h3>
+                  <p className="text-[11px] font-semibold text-brand-700 flex items-center gap-1 mb-2">
+                    <Building className="w-3 h-3" />
+                    {item.company?.name}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mb-2">
+                    ${item.stipend?.toLocaleString()} / mo • {item.location}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/50 flex items-center justify-between">
+                  <Link
+                    to={`/internships/${item.id}`}
+                    className="text-[11px] font-bold text-brand-600 hover:text-brand-700"
+                  >
+                    View Details
+                  </Link>
+                  <Link
+                    to={`/internships`}
+                    className="px-2.5 py-1 text-[11px] font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-2xs"
+                  >
+                    Apply
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

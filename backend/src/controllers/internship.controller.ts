@@ -6,15 +6,15 @@ import { AuthenticatedRequest } from '../middleware/auth';
 
 export const getAllInternships = async (req: Request, res: Response): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string, 10) || 1;
-    const limit = parseInt(req.query.limit as string, 10) || 10;
-    const search = (req.query.search as string) || '';
-    const domain = (req.query.domain as string) || '';
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string, 10) || 10));
+    const search = ((req.query.search as string) || '').trim();
+    const domain = ((req.query.domain as string) || '').trim();
     const companyId = req.query.companyId ? parseInt(req.query.companyId as string, 10) : undefined;
-    const location = (req.query.location as string) || '';
-    const status = (req.query.status as string) || '';
-    const minStipend = req.query.minStipend ? parseFloat(req.query.minStipend as string) : undefined;
-    const maxStipend = req.query.maxStipend ? parseFloat(req.query.maxStipend as string) : undefined;
+    const location = ((req.query.location as string) || '').trim();
+    const status = ((req.query.status as string) || '').trim();
+    const minStipend = req.query.minStipend !== undefined && req.query.minStipend !== '' ? parseFloat(req.query.minStipend as string) : undefined;
+    const maxStipend = req.query.maxStipend !== undefined && req.query.maxStipend !== '' ? parseFloat(req.query.maxStipend as string) : undefined;
     const facultyId = req.query.facultyId ? parseInt(req.query.facultyId as string, 10) : undefined;
 
     const skip = (page - 1) * limit;
@@ -34,11 +34,11 @@ export const getAllInternships = async (req: Request, res: Response): Promise<vo
       where.domain = domain;
     }
 
-    if (companyId) {
+    if (companyId && !isNaN(companyId)) {
       where.companyId = companyId;
     }
 
-    if (facultyId) {
+    if (facultyId && !isNaN(facultyId)) {
       where.facultyId = facultyId;
     }
 
@@ -50,10 +50,10 @@ export const getAllInternships = async (req: Request, res: Response): Promise<vo
       where.status = status;
     }
 
-    if (minStipend !== undefined || maxStipend !== undefined) {
+    if ((minStipend !== undefined && !isNaN(minStipend)) || (maxStipend !== undefined && !isNaN(maxStipend))) {
       where.stipend = {};
-      if (minStipend !== undefined) where.stipend.gte = minStipend;
-      if (maxStipend !== undefined) where.stipend.lte = maxStipend;
+      if (minStipend !== undefined && !isNaN(minStipend)) where.stipend.gte = minStipend;
+      if (maxStipend !== undefined && !isNaN(maxStipend)) where.stipend.lte = maxStipend;
     }
 
     const [total, internships] = await Promise.all([
@@ -95,6 +95,10 @@ export const getAllInternships = async (req: Request, res: Response): Promise<vo
 export const getInternshipById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      sendError(res, 'Invalid internship ID', 400);
+      return;
+    }
     const internship = await prisma.internship.findUnique({
       where: { id },
       include: {

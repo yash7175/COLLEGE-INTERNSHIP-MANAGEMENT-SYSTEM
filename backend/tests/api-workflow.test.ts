@@ -129,11 +129,15 @@ async function runTests() {
 
     // 11. Applications: Duplicate Application Prevention
     // Student 1 (Alex) is already accepted for Internship 1 in the seed data
+    const myAppsRes = await makeRequest('/applications/my', { token: studentToken });
+    const existingApp = myAppsRes.data?.data?.[0];
+    const existingInternshipId = existingApp?.internshipId || 1;
+
     const duplicateApp = await makeRequest('/applications/apply', {
       method: 'POST',
       token: studentToken,
       body: {
-        internshipId: 1,
+        internshipId: existingInternshipId,
         coverLetter: 'Attempting to apply a second time for the same internship...',
         qualifications: 'React, Node.js',
       },
@@ -141,11 +145,15 @@ async function runTests() {
     assert(duplicateApp.status === 409, 'Duplicate Application Guard: Prevents student applying twice to same internship');
 
     // 12. Interview: 24h notice validation
+    const allAppsRes = await makeRequest('/applications', { token: facultyToken });
+    const pendingApp = allAppsRes.data?.data?.find((a: any) => a.status === 'pending') || allAppsRes.data?.data?.[0];
+    const pendingAppId = pendingApp?.id || 1;
+
     const pastInterview = await makeRequest('/interviews/schedule', {
       method: 'POST',
       token: facultyToken,
       body: {
-        applicationId: 4, // Student 3's pending application
+        applicationId: pendingAppId,
         interviewDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // only 2 hours from now!
         interviewer: 'Dr. Evelyn Reed',
       },

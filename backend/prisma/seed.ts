@@ -215,13 +215,53 @@ async function main() {
       status: CompanyStatus.active,
     },
   });
-  console.log('✅ Companies created: 4 companies registered');
+
+  const company5 = await prisma.company.create({
+    data: {
+      name: 'QuantumData Analytics Corp',
+      registrationNumber: 'REG-QD-2023-7721',
+      location: 'Chicago, IL',
+      contactPerson: 'Marcus Sterling (Director of Data Engineering)',
+      email: 'careers@quantumdata.io',
+      phone: '+1-312-555-0177',
+      description: 'Enterprise data lakehouse, real-time analytics streaming platforms and Apache Kafka pipelines.',
+      status: CompanyStatus.active,
+    },
+  });
+
+  const company6 = await prisma.company.create({
+    data: {
+      name: 'Apex Mobile & Cloud Systems',
+      registrationNumber: 'REG-AM-2024-3319',
+      location: 'New York, NY',
+      contactPerson: 'Elena Rostova (Lead Mobile Architect)',
+      email: 'internships@apexmobile.com',
+      phone: '+1-212-555-0199',
+      description: 'Cross-platform mobile frameworks, Swift, Kotlin, React Native, and high-concurrency edge APIs.',
+      status: CompanyStatus.active,
+    },
+  });
+
+  const company7 = await prisma.company.create({
+    data: {
+      name: 'BioHealth Informatics Lab',
+      registrationNumber: 'REG-BH-2022-5540',
+      location: 'San Diego, CA',
+      contactPerson: 'Dr. Chloe Bennett (VP of Informatics)',
+      email: 'talent@biohealthlab.org',
+      phone: '+1-858-555-0122',
+      description: 'Cutting-edge healthcare informatics, clinical data pipelines, and genomics visualization software.',
+      status: CompanyStatus.active,
+    },
+  });
+  console.log('✅ Companies created: 7 companies registered');
 
   // 5. Create INTERNSHIPS
   const now = new Date();
   const futureStartDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
   const futureEndDate = new Date(now.getTime() + (14 + 16 * 7) * 24 * 60 * 60 * 1000); // 16 weeks
-  const deadlineDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const deadlineDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days in future
+  const longDeadlineDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days in future
 
   const internship1 = await prisma.internship.create({
     data: {
@@ -298,7 +338,84 @@ async function main() {
       status: InternshipStatus.approved,
     },
   });
-  console.log('✅ Internships created: 4 internship postings');
+
+  const internship5 = await prisma.internship.create({
+    data: {
+      companyId: company5.id,
+      facultyId: faculty2.id,
+      title: 'Data Platform & Distributed Analytics Intern',
+      description:
+        'Build scalable data ingest pipelines with Apache Spark, Kafka, and Snowflake. Develop real-time dashboard analytics, optimize complex SQL warehouse transformations, and collaborate with business intelligence analysts.',
+      domain: 'Data Science',
+      duration: '14 weeks',
+      durationWeeks: 14,
+      stipend: 3100.0,
+      location: 'Chicago, IL / Hybrid',
+      startDate: futureStartDate,
+      endDate: new Date(now.getTime() + (14 + 14 * 7) * 24 * 60 * 60 * 1000),
+      applicationDeadline: longDeadlineDate,
+      status: InternshipStatus.approved,
+    },
+  });
+
+  const internship6 = await prisma.internship.create({
+    data: {
+      companyId: company6.id,
+      facultyId: faculty1.id,
+      title: 'Mobile Application Engineering Intern (iOS/Android)',
+      description:
+        'Collaborate on our flagship consumer mobile applications using React Native and native Swift/Kotlin modules. Implement smooth gesture animations, offline caching with SQLite, and biometric authentication workflows.',
+      domain: 'Mobile Development',
+      duration: '12 weeks',
+      durationWeeks: 12,
+      stipend: 3000.0,
+      location: 'New York, NY / Remote',
+      startDate: futureStartDate,
+      endDate: new Date(now.getTime() + (14 + 12 * 7) * 24 * 60 * 60 * 1000),
+      applicationDeadline: longDeadlineDate,
+      status: InternshipStatus.approved,
+    },
+  });
+
+  const internship7 = await prisma.internship.create({
+    data: {
+      companyId: company7.id,
+      facultyId: faculty2.id,
+      title: 'Bioinformatics & Clinical Software Intern',
+      description:
+        'Participate in development of web platforms processing healthcare records and clinical genome sequences. Work with FHIR standard APIs, secure HIPAA compliant datastores, and Python bioinformatics toolkits.',
+      domain: 'Software Engineering',
+      duration: '16 weeks',
+      durationWeeks: 16,
+      stipend: 3300.0,
+      location: 'San Diego, CA / Hybrid',
+      startDate: futureStartDate,
+      endDate: new Date(now.getTime() + (14 + 16 * 7) * 24 * 60 * 60 * 1000),
+      applicationDeadline: longDeadlineDate,
+      status: InternshipStatus.approved,
+    },
+  });
+
+  const internship8 = await prisma.internship.create({
+    data: {
+      companyId: company3.id,
+      facultyId: faculty1.id,
+      title: 'DevOps Automation & Cloud Tooling Intern',
+      description:
+        'Design automated infrastructure test suites, CI/CD GitHub Actions workflows, container vulnerability scanning, and multi-region AWS Terraform blueprints alongside senior DevOps mentors.',
+      domain: 'Cloud & DevOps',
+      duration: '12 weeks',
+      durationWeeks: 12,
+      stipend: 2850.0,
+      location: 'Remote',
+      startDate: futureStartDate,
+      endDate: new Date(now.getTime() + (14 + 12 * 7) * 24 * 60 * 60 * 1000),
+      applicationDeadline: longDeadlineDate,
+      status: InternshipStatus.approved,
+    },
+  });
+
+  console.log('✅ Internships created: 8 internship postings (7 approved, 1 active)');
 
   // 6. Create APPLICATIONS with Timeline, Interview, Evaluation
   // Student 1 (Alex) applied to Internship 1 (TechCorp) -> Accepted

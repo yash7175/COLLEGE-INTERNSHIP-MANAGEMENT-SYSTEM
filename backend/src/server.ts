@@ -112,22 +112,29 @@ app.use('*', (req: Request, res: Response) => {
 // Centralized Error Handler
 app.use(errorHandler);
 
-const server = app.listen(PORT, () => {
-  console.log(`=======================================================`);
-  console.log(`🚀 College Internship Management Backend Server Started`);
-  console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🩺 Health: http://localhost:${PORT}/api/health`);
-  console.log(`🛡️  Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`=======================================================`);
-});
+let server: any;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`=======================================================`);
+    console.log(`🚀 College Internship Management Backend Server Started`);
+    console.log(`📡 URL: http://localhost:${PORT}`);
+    console.log(`🩺 Health: http://localhost:${PORT}/api/health`);
+    console.log(`🛡️  Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`=======================================================`);
+  });
+}
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM signal received: closing HTTP server and disconnecting DB');
-  server.close(async () => {
+  if (server) {
+    server.close(async () => {
+      await prisma.$disconnect();
+      console.log('HTTP server closed, Prisma disconnected.');
+    });
+  } else {
     await prisma.$disconnect();
-    console.log('HTTP server closed, Prisma disconnected.');
-  });
+  }
 });
 
 export default app;

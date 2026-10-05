@@ -11,6 +11,7 @@ import {
   AlertCircle,
   FileUp,
   Send,
+  RotateCcw,
 } from 'lucide-react';
 import api from '../services/api';
 import { Internship, ApiResponse } from '../types';
@@ -42,15 +43,27 @@ export const BrowseInternshipsPage: React.FC = () => {
   const [applyError, setApplyError] = useState<string | null>(null);
   const [applySuccess, setApplySuccess] = useState(false);
 
-  const fetchInternships = async () => {
+  const fetchInternships = async (overrides?: {
+    search?: string;
+    domain?: string;
+    location?: string;
+    minStipend?: string;
+    page?: number;
+  }) => {
     setLoading(true);
     try {
+      const activeSearch = overrides?.search !== undefined ? overrides.search : search;
+      const activeDomain = overrides?.domain !== undefined ? overrides.domain : domain;
+      const activeLocation = overrides?.location !== undefined ? overrides.location : location;
+      const activeMinStipend = overrides?.minStipend !== undefined ? overrides.minStipend : minStipend;
+      const activePage = overrides?.page !== undefined ? overrides.page : page;
+
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (domain) params.append('domain', domain);
-      if (location) params.append('location', location);
-      if (minStipend) params.append('minStipend', minStipend);
-      params.append('page', page.toString());
+      if (activeSearch.trim()) params.append('search', activeSearch.trim());
+      if (activeDomain) params.append('domain', activeDomain);
+      if (activeLocation.trim()) params.append('location', activeLocation.trim());
+      if (activeMinStipend && !isNaN(Number(activeMinStipend))) params.append('minStipend', activeMinStipend);
+      params.append('page', activePage.toString());
       params.append('limit', '9');
 
       const res = await api.get<ApiResponse<Internship[]>>(`/internships?${params.toString()}`);
@@ -74,7 +87,16 @@ export const BrowseInternshipsPage: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    fetchInternships();
+    fetchInternships({ page: 1 });
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setDomain('');
+    setLocation('');
+    setMinStipend('');
+    setPage(1);
+    fetchInternships({ search: '', domain: '', location: '', minStipend: '', page: 1 });
   };
 
   const handleApplyClick = (item: Internship) => {
@@ -145,7 +167,7 @@ export const BrowseInternshipsPage: React.FC = () => {
         </p>
 
         {/* Search & Filter Bar */}
-        <form onSubmit={handleSearchSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <form onSubmit={handleSearchSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <div className="relative lg:col-span-2">
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
             <input
@@ -161,8 +183,10 @@ export const BrowseInternshipsPage: React.FC = () => {
             <select
               value={domain}
               onChange={(e) => {
-                setDomain(e.target.value);
+                const newDomain = e.target.value;
+                setDomain(newDomain);
                 setPage(1);
+                fetchInternships({ domain: newDomain, page: 1 });
               }}
               className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
@@ -171,7 +195,19 @@ export const BrowseInternshipsPage: React.FC = () => {
               <option value="Artificial Intelligence">Artificial Intelligence</option>
               <option value="Cloud & DevOps">Cloud & DevOps</option>
               <option value="Cybersecurity">Cybersecurity</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Mobile Development">Mobile Development</option>
             </select>
+          </div>
+
+          <div>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Location (e.g. Remote)"
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
           </div>
 
           <div>
@@ -184,13 +220,21 @@ export const BrowseInternshipsPage: React.FC = () => {
             />
           </div>
 
-          <div>
+          <div className="flex gap-2">
             <button
               type="submit"
-              className="w-full py-2 px-4 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 py-2 px-3 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Filter className="w-3.5 h-3.5" />
-              Apply Filters
+              Filter
+            </button>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              title="Reset Filters"
+              className="p-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
           </div>
         </form>
@@ -204,13 +248,7 @@ export const BrowseInternshipsPage: React.FC = () => {
           title="No internships match your search"
           description="Try broadening your keyword criteria or clearing filters to see all available openings."
           actionText="Reset Filters"
-          onAction={() => {
-            setSearch('');
-            setDomain('');
-            setMinStipend('');
-            setPage(1);
-            fetchInternships();
-          }}
+          onAction={handleResetFilters}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
